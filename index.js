@@ -37,6 +37,15 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const memberShipCollection = client
+      .db("mealmasterdb")
+      .collection("membership");
+
+    app.get("/membership", async (req, res) => {
+      const result = await memberShipCollection.find({}).toArray();
+      res.send(result);
+    });
+
     console.log("You successfully connected to MongoDB!");
   } finally {
   }
