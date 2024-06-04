@@ -40,9 +40,37 @@ async function run() {
     const memberShipCollection = client
       .db("mealmasterdb")
       .collection("membership");
+    const usersCollection = client.db("mealmasterdb").collection("users");
 
     app.get("/membership", async (req, res) => {
       const result = await memberShipCollection.find({}).toArray();
+      res.send(result);
+    });
+
+    // save user data in db
+    app.put("/user", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user?.email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: user?.name,
+          email: user?.email,
+          photo: user?.photo,
+          lastLogin: user?.lastLogin,
+        },
+        $setOnInsert: {
+          role: user?.role,
+          status: user?.status,
+          createdAt: user?.createdAt,
+        },
+      };
+      console.log(updateDoc);
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
 
