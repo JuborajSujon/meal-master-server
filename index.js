@@ -65,12 +65,19 @@ async function run() {
           createdAt: user?.createdAt,
         },
       };
-      console.log(updateDoc);
       const result = await usersCollection.updateOne(
         filter,
         updateDoc,
         options
       );
+      res.send(result);
+    });
+
+    // get user data
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
       res.send(result);
     });
 
