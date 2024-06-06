@@ -35,6 +35,7 @@ const client = new MongoClient(uri, {
   },
 });
 
+// verify token general user
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
   if (!token) {
@@ -72,6 +73,17 @@ async function run() {
         })
         .send({ success: true });
     });
+    // verify token admin user
+    const verifyAdmin = async (req, res, next) => {
+      email = req.user?.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
     // Logout
     app.get("/logout", async (req, res) => {
       try {
@@ -93,7 +105,7 @@ async function run() {
     });
 
     // save menu data in db
-    app.post("/menu", async (req, res) => {
+    app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
       const menuItem = req.body;
       const result = await menuCollection.insertOne(menuItem);
       res.send(result);
