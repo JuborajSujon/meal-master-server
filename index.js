@@ -58,6 +58,9 @@ async function run() {
       .collection("membership");
     const usersCollection = client.db("mealmasterdb").collection("users");
     const menuCollection = client.db("mealmasterdb").collection("menu");
+    const upcomingMealCollection = client
+      .db("mealmasterdb")
+      .collection("upcomingmealdb");
 
     // jwt token generate
     app.post("/jwt", (req, res) => {
@@ -108,6 +111,13 @@ async function run() {
     app.post("/menu", verifyToken, verifyAdmin, async (req, res) => {
       const menuItem = req.body;
       const result = await menuCollection.insertOne(menuItem);
+      res.send(result);
+    });
+
+    // save upcoming meal data in db
+    app.post("/upcoming-meal", verifyToken, verifyAdmin, async (req, res) => {
+      const upcomingMeal = req.body;
+      const result = await upcomingMealCollection.insertOne(upcomingMeal);
       res.send(result);
     });
 
