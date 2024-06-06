@@ -56,6 +56,7 @@ async function run() {
       .db("mealmasterdb")
       .collection("membership");
     const usersCollection = client.db("mealmasterdb").collection("users");
+    const menuCollection = client.db("mealmasterdb").collection("menu");
 
     // jwt token generate
     app.post("/jwt", (req, res) => {
@@ -88,6 +89,13 @@ async function run() {
 
     app.get("/membership", async (req, res) => {
       const result = await memberShipCollection.find({}).toArray();
+      res.send(result);
+    });
+
+    // save menu data in db
+    app.post("/menu", async (req, res) => {
+      const menuItem = req.body;
+      const result = await menuCollection.insertOne(menuItem);
       res.send(result);
     });
 
