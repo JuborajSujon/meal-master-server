@@ -114,6 +114,12 @@ async function run() {
       res.send(result);
     });
 
+    // get menu data from db
+    app.get("/menu", async (req, res) => {
+      const result = await menuCollection.find().toArray();
+      res.send(result);
+    });
+
     // save upcoming meal data in db
     app.post("/upcoming-meal", verifyToken, verifyAdmin, async (req, res) => {
       const upcomingMeal = req.body;

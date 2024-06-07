@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "meal_title": "Croissants Breakfast Sandwiches",
+    "meal_title": "Croissants Sandwiches",
     "meal_category": "Breakfast",
     "meal_subcategory": "Continental Breakfast",
     "image": "https://i.ibb.co/Hqc5Jvb/croissants-breakfast-sandwiches.jpg",
@@ -76,7 +76,7 @@
     "serve_amount": "1 doz",
     "prep_time": "20 min",
     "cooking_time": "25 min",
-    "total_time": "30 min",
+    "total_time": "45 min",
     "short_description": "These basic muffins can be made as-is, or you can add one of several different ingredients for a variety of muffins. All options are delicious!",
     "meal_ingredients": [
       "2 cups all-purpose flour",
@@ -111,7 +111,7 @@
     "total_time": "10 min",
     "short_description": "Bread Butter Jam Recipe is the simplest and the basic sandwich recipe even a kid can make it easily. Usually kids make this for fireless cooking in school competitions.",
     "meal_ingredients": [
-      "Milk bread or brown bread - 9 slices",
+      "Milk bread or brown bread- 9 slices",
       "Mixed fruit jam",
       "Butter at room temperature",
       "Butter - to spread on the tawa",
@@ -194,7 +194,7 @@
   },
   {
     "id": 6,
-    "meal_title": "Freshly Squeezed Orange Juice",
+    "meal_title": "Freshly Orange Juice",
     "meal_category": "Breakfast",
     "meal_subcategory": "Continental Breakfast",
     "image": "",
@@ -365,7 +365,7 @@
       "1 pinch fine salt",
       "1 cup whole milk",
       "1/4 tbsp sugar",
-      "1.45 tsp yeast for sweets",
+      "2 tsp yeast for sweets",
       "Maple syrup"
     ],
     "nutrition_facts": [
@@ -667,7 +667,7 @@
   },
   {
     "id": 22,
-    "meal_title": "Delicious Juice Recipe With Turmeric",
+    "meal_title": "Pineapple Orange Sunshine",
     "meal_category": "Breakfast",
     "meal_subcategory": "Healthy Breakfast",
     "image": "",
@@ -676,7 +676,7 @@
     "prep_time": "5 min",
     "cooking_time": "5 min",
     "total_time": "10 min",
-    "short_description": "PINEAPPLE ORANGE SUNSHINE JUICE (WITHOUT A JUICER) January 2, 2022 by munchmealsbyjanet1 Leave a Comment Jump to Recipe  Print RecipeThis Pineapple Orange Sunshine Juice (without a juicer) is a refreshing and absolutely delicious blend of pineapple, orange, cucumber, ginger, and lemon juice. It’s a delicious way to enjoy nourishing ingredients, with light sweetness and big flavors.",
+    "short_description": "Pineapple Orange Sunshine Juice (without a juicer) is a refreshing and absolutely delicious blend of pineapple, orange, cucumber, ginger, and lemon juice. It’s a delicious way to enjoy nourishing ingredients, with light sweetness and big flavors.",
     "meal_ingredients": [
       "1 fresh pineapple",
       "2 navel oranges",
@@ -699,7 +699,7 @@
   },
   {
     "id": 23,
-    "meal_title": "GRAPEFRUIT ORANGE LEMON JUICE",
+    "meal_title": "Grape Orange Lemon Juice",
     "meal_category": "Breakfast",
     "meal_subcategory": "Healthy Breakfast",
     "image": "",
@@ -1515,7 +1515,7 @@
   },
   {
     "id": 48,
-    "meal_title": "Mashed Potatoes",
+    "meal_title": "Steamed broccoli",
     "meal_category": "Dinner",
     "meal_subcategory": "Sides Dishes",
     "image": "",
