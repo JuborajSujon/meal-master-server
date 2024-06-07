@@ -127,6 +127,12 @@ async function run() {
       res.send(result);
     });
 
+    // get upcoming meal data from db
+    app.get("/upcoming-meals", async (req, res) => {
+      const result = await upcomingMealCollection.find().toArray();
+      res.send(result);
+    });
+
     // save user data in db
     app.put("/user", async (req, res) => {
       const user = req.body;
