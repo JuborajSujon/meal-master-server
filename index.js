@@ -120,6 +120,14 @@ async function run() {
       res.send(result);
     });
 
+    // get single menu data from db
+    app.get("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await menuCollection.findOne(query);
+      res.send(result);
+    });
+
     // save upcoming meal data in db
     app.post("/upcoming-meal", verifyToken, verifyAdmin, async (req, res) => {
       const upcomingMeal = req.body;
