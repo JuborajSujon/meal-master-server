@@ -175,6 +175,20 @@ async function run() {
       res.send(result);
     });
 
+    // Save User Review
+    app.post("/review/:id", async (req, res) => {
+      const review = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const doc = {
+        $push: {
+          reviews: review,
+        },
+      };
+      const result = await menuCollection.updateOne(query, doc);
+      res.send(result);
+    });
+
     console.log("You successfully connected to MongoDB!");
   } finally {
   }
