@@ -217,7 +217,41 @@ async function run() {
             rating: ratingObj,
           },
         };
-        const ratingResult = await menuCollection.updateOne(query, ratingDoc);
+        await menuCollection.updateOne(query, ratingDoc);
+
+        // calculate the count of each star rating
+        const ratingDistribution = await menuCollection
+          .aggregate([
+            {
+              $match: query,
+            },
+            {
+              $unwind: "$reviews",
+            },
+            {
+              $group: {
+                _id: "$reviews.rating",
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $sort: { _id: 1 },
+            },
+          ])
+          .toArray();
+
+        const ratingCount = ratingDistribution.reduce((acc, { _id, count }) => {
+          acc[_id] = count;
+          return acc;
+        }, {});
+
+        // update the meal rating and rating distribution
+        const ratingResult = await menuCollection.updateOne(query, {
+          $set: {
+            rating: ratingObj,
+            ratingCount: ratingCount,
+          },
+        });
 
         res.send(ratingResult);
       } catch (err) {
