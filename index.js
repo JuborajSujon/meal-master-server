@@ -62,6 +62,8 @@ async function run() {
       .db("mealmasterdb")
       .collection("upcomingmealdb");
 
+    const cartCollection = client.db("mealmasterdb").collection("carts");
+
     // jwt token generate
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -359,8 +361,6 @@ async function run() {
           // recalculate total likes count by liked or not
           meal.likes_count = meal.likes.filter((like) => like.liked).length;
 
-          console.log(meal.likes_count);
-
           const result = await upcomingMealCollection.updateOne(query, {
             $set: { likes: meal.likes, likes_count: meal.likes_count },
           });
@@ -371,6 +371,14 @@ async function run() {
         console.log(err);
         res.status(500).send(err);
       }
+    });
+
+    // save cart data in menu db
+    app.post("/carts", async (req, res) => {
+      const cartItem = req.body;
+      const result = await cartCollection.insertOne(cartItem);
+
+      res.send(result);
     });
 
     console.log("You successfully connected to MongoDB!");
