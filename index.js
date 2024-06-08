@@ -180,13 +180,106 @@ async function run() {
       const review = req.body;
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const doc = {
-        $push: {
-          reviews: review,
-        },
-      };
-      const result = await menuCollection.updateOne(query, doc);
-      res.send(result);
+      try {
+        const meal = await menuCollection.findOne(query);
+        // if meal not found
+        if (!meal) {
+          return res.status(404).send({ message: "Meal not found" });
+        }
+
+        // update review
+        const doc = {
+          $push: {
+            reviews: review,
+          },
+        };
+        const result = await menuCollection.updateOne(query, doc);
+
+        // recalculate rating object
+        const updatedMeal = await menuCollection.findOne(query);
+        const reviewCount = updatedMeal.reviews.length;
+        const totalRating = updatedMeal.reviews.reduce(
+          (total, review) => total + review.rating,
+          0
+        );
+
+        const averageRating = (totalRating / reviewCount).toFixed(1);
+
+        const ratingObj = {
+          reviewCount,
+          totalRating,
+          averageRating,
+        };
+
+        // update rating object
+        const ratingDoc = {
+          $set: {
+            rating: ratingObj,
+          },
+        };
+        const ratingResult = await menuCollection.updateOne(query, ratingDoc);
+
+        res.send(ratingResult);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
+    // save like data in db
+    app.post("/like", async (req, res) => {
+      const { meal_id, user_id, name, email, photo, liked, created_time } =
+        req.body;
+      const query = { _id: new ObjectId(meal_id) };
+      try {
+        const meal = await menuCollection.findOne(query);
+        // if meal not found
+        if (!meal) {
+          return res.status(404).send({ message: "Meal not found" });
+        }
+        // if like already exist
+        const userLikeIndex = meal.likes.findIndex(
+          (like) => like.user_id === user_id
+        );
+        console.log(userLikeIndex);
+        if (userLikeIndex > -1) {
+          // update like
+          meal.likes[userLikeIndex].liked = liked;
+          meal.likes[userLikeIndex].created_time = created_time;
+
+          // recalculate total likes count by liked or not
+          meal.likes_count = meal.likes.filter((like) => like.liked).length;
+          console.log(meal.likes_count);
+          const result = await menuCollection.updateOne(query, {
+            $set: { likes: meal.likes, likes_count: meal.likes_count },
+          });
+          res.send(result);
+        } else {
+          // if like not exist
+          meal.likes.push({
+            user_id,
+            name,
+            email,
+            photo,
+            liked,
+            created_time: Date.now(),
+          });
+
+          // recalculate total likes count by liked or not
+          meal.likes_count = meal.likes.filter((like) => like.liked).length;
+
+          console.log(meal.likes_count);
+
+          const result = await menuCollection.updateOne(query, {
+            $set: { likes: meal.likes, likes_count: meal.likes_count },
+          });
+
+          res.send(result);
+        }
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
     });
 
     console.log("You successfully connected to MongoDB!");
