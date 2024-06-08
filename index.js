@@ -260,7 +260,7 @@ async function run() {
       }
     });
 
-    // save like data in db
+    // save like data in menu db
     app.post("/like", async (req, res) => {
       const { meal_id, user_id, name, email, photo, liked, created_time } =
         req.body;
@@ -275,7 +275,8 @@ async function run() {
         const userLikeIndex = meal.likes.findIndex(
           (like) => like.user_id === user_id
         );
-        console.log(userLikeIndex);
+
+        // if like exist
         if (userLikeIndex > -1) {
           // update like
           meal.likes[userLikeIndex].liked = liked;
@@ -305,6 +306,62 @@ async function run() {
           console.log(meal.likes_count);
 
           const result = await menuCollection.updateOne(query, {
+            $set: { likes: meal.likes, likes_count: meal.likes_count },
+          });
+
+          res.send(result);
+        }
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+    // save like data in upcoming db
+    app.post("/upcoming-like", async (req, res) => {
+      const { meal_id, user_id, name, email, photo, liked, created_time } =
+        req.body;
+      const query = { _id: new ObjectId(meal_id) };
+      try {
+        const meal = await upcomingMealCollection.findOne(query);
+        // if meal not found
+        if (!meal) {
+          return res.status(404).send({ message: "Meal not found" });
+        }
+        // if like already exist
+        const userLikeIndex = meal.likes.findIndex(
+          (like) => like.user_id === user_id
+        );
+
+        // if like exist
+        if (userLikeIndex > -1) {
+          // update like
+          meal.likes[userLikeIndex].liked = liked;
+          meal.likes[userLikeIndex].created_time = created_time;
+
+          // recalculate total likes count by liked or not
+          meal.likes_count = meal.likes.filter((like) => like.liked).length;
+          console.log(meal.likes_count);
+          const result = await upcomingMealCollection.updateOne(query, {
+            $set: { likes: meal.likes, likes_count: meal.likes_count },
+          });
+          res.send(result);
+        } else {
+          // if like not exist
+          meal.likes.push({
+            user_id,
+            name,
+            email,
+            photo,
+            liked,
+            created_time: Date.now(),
+          });
+
+          // recalculate total likes count by liked or not
+          meal.likes_count = meal.likes.filter((like) => like.liked).length;
+
+          console.log(meal.likes_count);
+
+          const result = await upcomingMealCollection.updateOne(query, {
             $set: { likes: meal.likes, likes_count: meal.likes_count },
           });
 
