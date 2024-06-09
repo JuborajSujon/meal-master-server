@@ -324,6 +324,57 @@ async function run() {
       }
     });
 
+    // get all review
+    app.get("/all-reviews", async (req, res) => {
+      try {
+        const result = await menuCollection
+          .aggregate([
+            { $unwind: "$reviews" },
+            {
+              $project: {
+                _id: 1,
+                meal_title: 1,
+                "reviews.user_id": 1,
+                "reviews.rating": 1,
+                "reviews.review": 1,
+                "reviews.created_time": 1,
+                likes_count: 1,
+                rating: 1,
+              },
+            },
+            {
+              $group: {
+                _id: "$_id",
+                meal_title: { $first: "$meal_title" },
+                reviews: { $push: "$reviews" },
+                likes_count: { $first: "$likes_count" },
+                rating: { $first: "$rating" },
+                meal_review_count: { $sum: 1 },
+              },
+            },
+            { $unwind: "$reviews" },
+            {
+              $project: {
+                _id: 1,
+                meal_title: 1,
+                "reviews.user_id": 1,
+                "reviews.rating": 1,
+                "reviews.review": 1,
+                "reviews.created_time": 1,
+                likes_count: 1,
+                rating: 1,
+                meal_review_count: 1,
+              },
+            },
+          ])
+          .toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // get user review
     app.get("/reviews", async (req, res) => {
       const { email } = req.query;
