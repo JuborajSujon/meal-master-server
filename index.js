@@ -408,6 +408,14 @@ async function run() {
       }
     });
 
+    // carts data delete in menu db
+    app.delete("/carts/:id", async (req, res) => {
+      const menuId = req.params.id;
+      const query = { _id: new ObjectId(menuId) };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
     console.log("You successfully connected to MongoDB!");
   } finally {
   }
