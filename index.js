@@ -377,8 +377,35 @@ async function run() {
     app.post("/carts", async (req, res) => {
       const cartItem = req.body;
       const result = await cartCollection.insertOne(cartItem);
-
       res.send(result);
+    });
+
+    // carts data get in menu db
+    app.get("/carts", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      // check user email exist or not
+      if (!email) {
+        return res.status(400).send([]);
+      }
+
+      // get carts data
+      try {
+        const userDocuments = await cartCollection.find(query).toArray();
+        const result = await Promise.all(
+          userDocuments.map(async (item) => {
+            const menu = await menuCollection.findOne({
+              _id: new ObjectId(item.menuId),
+            });
+            return { ...item, menu: menu || null };
+          })
+        );
+
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
     });
 
     console.log("You successfully connected to MongoDB!");
