@@ -130,6 +130,24 @@ async function run() {
       res.send(result);
     });
 
+    // Update menu data in db
+    app.put("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedItem = req.body;
+      console.log(updatedItem);
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...updatedItem,
+        },
+      };
+
+      const result = await menuCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
     // save upcoming meal data in db
     app.post("/upcoming-meal", verifyToken, verifyAdmin, async (req, res) => {
       const upcomingMeal = req.body;
