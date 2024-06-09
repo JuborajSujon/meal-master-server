@@ -262,6 +262,44 @@ async function run() {
       }
     });
 
+    // get user review
+    app.get("/reviews", async (req, res) => {
+      const { email } = req.query;
+      if (!email) {
+        return res.status(400).send({ message: "Email is required" });
+      }
+      try {
+        // get user review base on email
+        const result = await menuCollection
+          .aggregate([
+            { $match: { "reviews.email": email } },
+            { $unwind: "$reviews" },
+            { $match: { "reviews.email": email } },
+            {
+              $project: {
+                _id: 1,
+                meal_title: 1,
+                "reviews.user_id": 1,
+                "reviews.name": 1,
+                "reviews.email": 1,
+                "reviews.photo": 1,
+                "reviews.rating": 1,
+                "reviews.review": 1,
+                "reviews.created_time": 1,
+                likes_count: 1,
+                rating: 1,
+              },
+            },
+          ])
+          .toArray();
+
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // save like data in menu db
     app.post("/like", async (req, res) => {
       const { meal_id, user_id, name, email, photo, liked, created_time } =
