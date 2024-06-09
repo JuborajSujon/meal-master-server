@@ -199,6 +199,20 @@ async function run() {
       res.send({ result, count });
     });
 
+    // get user make admin from db
+    app.patch("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {
+          ...user,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // Save User Review
     app.post("/review/:id", async (req, res) => {
       const review = req.body;
