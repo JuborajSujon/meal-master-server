@@ -158,6 +158,7 @@ async function run() {
         $setOnInsert: {
           role: user?.role,
           status: user?.status,
+          badge: user?.badge,
           createdAt: user?.createdAt,
         },
       };
@@ -169,12 +170,33 @@ async function run() {
       res.send(result);
     });
 
-    // get user data
+    // get user data specific from db
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
       res.send(result);
+    });
+
+    // get all user data from db
+    app.get("/users", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+      const search = req.query.search;
+      let query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      };
+
+      const result = await usersCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+      const count = await usersCollection.countDocuments(query);
+      res.send({ result, count });
     });
 
     // Save User Review
