@@ -605,7 +605,7 @@ async function run() {
       res.send(result);
     });
 
-    // carts data get in menu db
+    // carts data get by email in menu db
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -631,6 +631,38 @@ async function run() {
         console.log(err);
         res.status(500).send(err);
       }
+    });
+
+    // get all carts data in menu db
+    app.get("/all-carts", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+      const search = req.query.search;
+      let query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      };
+
+      const result = await cartCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+
+      const count = await cartCollection.countDocuments(query);
+      res.send({ result, count });
+    });
+
+    // carts data delivery update in menu db
+    app.patch("/all-carts/:id", async (req, res) => {
+      const cartId = req.params.id;
+      const query = { _id: new ObjectId(cartId) };
+      const result = await cartCollection.updateOne(query, {
+        $set: { req_status: "delivery" },
+      });
+      res.send(result);
     });
 
     // carts data delete in menu db
