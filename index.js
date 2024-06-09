@@ -300,6 +300,80 @@ async function run() {
       }
     });
 
+    // updata user reviw by created_time
+    app.put("/review/:reviewId", async (req, res) => {
+      try {
+        const { reviewId } = req.params;
+        const { rating, review, created_time } = req.body;
+
+        // update review
+        const result = await menuCollection.updateOne(
+          { "reviews.created_time": created_time },
+          {
+            $set: {
+              "reviews.$.rating": rating,
+              "reviews.$.review": review,
+              "reviews.$.created_time": created_time,
+            },
+          }
+        );
+
+        if (result.matchedCount === 0) {
+          return res.status(404).send({ message: "Review not found" });
+        }
+
+        // recalculate rating object
+        const meal = await menuCollection.findOne({
+          "reviews.created_time": created_time,
+        });
+        const reviewCount = meal.reviews.length;
+        const totalRating = meal.reviews.reduce(
+          (total, review) => total + review.rating,
+          0
+        );
+        const averageRating = (totalRating / reviewCount).toFixed(1);
+
+        await menuCollection.updateOne(
+          { "reviews.created_time": created_time },
+          {
+            $set: {
+              rating: {
+                reviewCount,
+                totalRating,
+                averageRating,
+              },
+            },
+          }
+        );
+
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
+    // delete user review
+    app.delete("/review/:reviewId", async (req, res) => {
+      try {
+        const { reviewId } = req.params;
+        const result = await menuCollection.updateOne(
+          { "reviews.created_time": reviewId },
+          {
+            $pull: {
+              reviews: {
+                created_time: reviewId,
+              },
+            },
+          }
+        );
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // save like data in menu db
     app.post("/like", async (req, res) => {
       const { meal_id, user_id, name, email, photo, liked, created_time } =
