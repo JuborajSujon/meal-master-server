@@ -64,6 +64,8 @@ async function run() {
 
     const cartCollection = client.db("mealmasterdb").collection("carts");
 
+    const paymentCollection = client.db("mealmasterdb").collection("payments");
+
     // jwt token generate
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -102,7 +104,6 @@ async function run() {
       res.send({ admin });
     });
 
-    // Logout
     app.get("/logout", async (req, res) => {
       try {
         res
@@ -144,7 +145,7 @@ async function run() {
     });
 
     // get single menu data from db
-    app.get("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/menu/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await menuCollection.findOne(query);
@@ -273,7 +274,7 @@ async function run() {
     });
 
     // get user data specific from db
-    app.get("/user/:email", verifyToken, async (req, res) => {
+    app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
@@ -809,6 +810,51 @@ async function run() {
       const menuId = req.params.id;
       const query = { _id: new ObjectId(menuId) };
       const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // create payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    // update payment status
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentCollection.insertOne(payment);
+
+      // update user status
+      const user = await usersCollection.findOne({ email: payment.email });
+      if (user) {
+        await usersCollection.updateOne(
+          { email: payment.email },
+          {
+            $set: {
+              badge: payment.service_name,
+            },
+          }
+        );
+      }
+
+      res.send(result);
+    });
+
+    // get payment data useing email
+    app.get("/payments", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
       res.send(result);
     });
 
