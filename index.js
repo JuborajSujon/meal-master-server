@@ -194,6 +194,14 @@ async function run() {
       res.send(result);
     });
 
+    // get single upcoming meal data from db
+    app.get("/upcoming-meal/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await upcomingMealCollection.findOne(query);
+      res.send(result);
+    });
+
     // get upcoming meal data from db by sort
     app.get("/upcoming-meals-sort", async (req, res) => {
       const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
