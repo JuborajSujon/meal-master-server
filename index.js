@@ -423,35 +423,54 @@ async function run() {
     // get user review
     app.get("/reviews", async (req, res) => {
       const { email } = req.query;
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+
       if (!email) {
         return res.status(400).send({ message: "Email is required" });
       }
-      try {
-        // get user review base on email
-        const result = await menuCollection
-          .aggregate([
-            { $match: { "reviews.email": email } },
-            { $unwind: "$reviews" },
-            { $match: { "reviews.email": email } },
-            {
-              $project: {
-                _id: 1,
-                meal_title: 1,
-                "reviews.user_id": 1,
-                "reviews.name": 1,
-                "reviews.email": 1,
-                "reviews.photo": 1,
-                "reviews.rating": 1,
-                "reviews.review": 1,
-                "reviews.created_time": 1,
-                likes_count: 1,
-                rating: 1,
-              },
-            },
-          ])
-          .toArray();
 
-        res.send(result);
+      try {
+        const pipeline = [
+          { $match: { "reviews.email": email } },
+          { $unwind: "$reviews" },
+          { $match: { "reviews.email": email } },
+          {
+            $project: {
+              _id: 1,
+              meal_title: 1,
+              "reviews.user_id": 1,
+              "reviews.name": 1,
+              "reviews.email": 1,
+              "reviews.photo": 1,
+              "reviews.rating": 1,
+              "reviews.review": 1,
+              "reviews.created_time": 1,
+              likes_count: 1,
+              rating: 1,
+            },
+          },
+          { $skip: page * size },
+          { $limit: size },
+        ];
+
+        // Run the aggregation pipeline
+        const result = await menuCollection.aggregate(pipeline).toArray();
+
+        // Count the number of documents with the given email
+        const countPipeline = [
+          { $match: { "reviews.email": email } },
+          { $unwind: "$reviews" },
+          { $match: { "reviews.email": email } },
+          { $count: "count" },
+        ];
+
+        const countResult = await menuCollection
+          .aggregate(countPipeline)
+          .toArray();
+        const count = countResult.length > 0 ? countResult[0].count : 0;
+
+        res.send({ result, count });
       } catch (err) {
         console.log(err);
         res.status(500).send(err);
