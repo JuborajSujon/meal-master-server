@@ -89,6 +89,19 @@ async function run() {
       }
       next();
     };
+    // is admin or not
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === "admin";
+      }
+
+      res.send({ admin });
+    });
+
     // Logout
     app.get("/logout", async (req, res) => {
       try {
@@ -103,9 +116,17 @@ async function run() {
         res.status(500).send(err);
       }
     });
-
+    // get membership data from db
     app.get("/membership", async (req, res) => {
       const result = await memberShipCollection.find({}).toArray();
+      res.send(result);
+    });
+
+    // single membership data from db
+    app.get("/membership/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await memberShipCollection.findOne(query);
       res.send(result);
     });
 
@@ -123,7 +144,7 @@ async function run() {
     });
 
     // get single menu data from db
-    app.get("/menu/:id", async (req, res) => {
+    app.get("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await menuCollection.findOne(query);
@@ -131,7 +152,7 @@ async function run() {
     });
 
     // Update menu data in db
-    app.put("/menu/:id", async (req, res) => {
+    app.put("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const updatedItem = req.body;
       console.log(updatedItem);
@@ -149,7 +170,7 @@ async function run() {
     });
 
     // delete menu data from db
-    app.delete("/menu/:id", async (req, res) => {
+    app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await menuCollection.deleteOne(query);
@@ -252,7 +273,7 @@ async function run() {
     });
 
     // get user data specific from db
-    app.get("/user/:email", async (req, res) => {
+    app.get("/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
@@ -260,7 +281,7 @@ async function run() {
     });
 
     // get all user data from db
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
       const search = req.query.search;
@@ -281,21 +302,26 @@ async function run() {
     });
 
     // get user make admin from db
-    app.patch("/users/admin/:email", async (req, res) => {
-      const email = req.params.email;
-      const user = req.body;
-      const filter = { email: email };
-      const updateDoc = {
-        $set: {
-          ...user,
-        },
-      };
-      const result = await usersCollection.updateOne(filter, updateDoc);
-      res.send(result);
-    });
+    app.patch(
+      "/users/admin/:email",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const email = req.params.email;
+        const user = req.body;
+        const filter = { email: email };
+        const updateDoc = {
+          $set: {
+            ...user,
+          },
+        };
+        const result = await usersCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      }
+    );
 
     // Save User Review
-    app.post("/review/:id", async (req, res) => {
+    app.post("/review/:id", verifyToken, async (req, res) => {
       const review = req.body;
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -380,7 +406,7 @@ async function run() {
     });
 
     // get all review
-    app.get("/all-reviews", async (req, res) => {
+    app.get("/all-reviews", verifyToken, verifyAdmin, async (req, res) => {
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
       try {
@@ -436,7 +462,7 @@ async function run() {
     });
 
     // get user review
-    app.get("/reviews", async (req, res) => {
+    app.get("/reviews", verifyToken, async (req, res) => {
       const { email } = req.query;
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
@@ -493,7 +519,7 @@ async function run() {
     });
 
     // updata user reviw by created_time
-    app.put("/review/:reviewId", async (req, res) => {
+    app.put("/review/:reviewId", verifyToken, async (req, res) => {
       try {
         const { reviewId } = req.params;
         const { rating, review, created_time } = req.body;
@@ -546,7 +572,7 @@ async function run() {
     });
 
     // delete user review
-    app.delete("/review/:reviewId", async (req, res) => {
+    app.delete("/review/:reviewId", verifyToken, async (req, res) => {
       try {
         const { reviewId } = req.params;
         const result = await menuCollection.updateOne(
@@ -676,14 +702,14 @@ async function run() {
     });
 
     // save cart data in menu db
-    app.post("/carts", async (req, res) => {
+    app.post("/carts", verifyToken, async (req, res) => {
       const cartItem = req.body;
       const result = await cartCollection.insertOne(cartItem);
       res.send(result);
     });
 
     // carts data get by email in menu db
-    app.get("/carts", async (req, res) => {
+    app.get("/carts", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       // check user email exist or not
@@ -769,7 +795,7 @@ async function run() {
     });
 
     // carts data delivery update in menu db
-    app.patch("/all-carts/:id", async (req, res) => {
+    app.patch("/all-carts/:id", verifyToken, verifyAdmin, async (req, res) => {
       const cartId = req.params.id;
       const query = { _id: new ObjectId(cartId) };
       const result = await cartCollection.updateOne(query, {
