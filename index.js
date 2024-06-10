@@ -698,6 +698,42 @@ async function run() {
       res.send({ result, count });
     });
 
+    // all carts data for base pagination in menu db
+    app.get("/carts-sort", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+
+      const email = req.query.email;
+      const query = { email: email };
+      // check user email exist or not
+      if (!email) {
+        return res.status(400).send([]);
+      }
+
+      // get carts data
+      try {
+        const userDocuments = await cartCollection
+          .find(query)
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+        const result = await Promise.all(
+          userDocuments.map(async (item) => {
+            const menu = await menuCollection.findOne({
+              _id: new ObjectId(item.menuId),
+            });
+            return { ...item, menu: menu || null };
+          })
+        );
+
+        const count = await cartCollection.countDocuments(query);
+        res.send({ result, count });
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // carts data delivery update in menu db
     app.patch("/all-carts/:id", async (req, res) => {
       const cartId = req.params.id;
