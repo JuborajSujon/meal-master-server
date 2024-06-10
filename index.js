@@ -160,11 +160,18 @@ async function run() {
     app.get("/all-meals", async (req, res) => {
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
+
+      const sortLike = req.query.sortLike === "asc" ? 1 : -1;
+
+      const sortReviews = req.query.sortReviews === "asc" ? 1 : -1;
+
+      console.log(sortLike, sortReviews);
       try {
         const result = await menuCollection
           .find()
           .skip(page * size)
           .limit(size)
+          .sort({ likes_count: sortLike, "rating.reviewCount": sortReviews })
           .toArray();
         const count = await menuCollection.countDocuments();
         res.send({ result, count });
