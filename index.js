@@ -156,6 +156,24 @@ async function run() {
       res.send(result);
     });
 
+    // get menu data for all meals
+    app.get("/all-meals", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+      try {
+        const result = await menuCollection
+          .find()
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+        const count = await menuCollection.countDocuments();
+        res.send({ result, count });
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // save upcoming meal data in db
     app.post("/upcoming-meal", verifyToken, verifyAdmin, async (req, res) => {
       const upcomingMeal = req.body;
@@ -182,7 +200,9 @@ async function run() {
           .limit(size)
           .sort({ likes_count: sortOrder })
           .toArray();
-        res.send(result);
+
+        const count = await upcomingMealCollection.countDocuments();
+        res.send({ result, count });
       } catch (err) {
         console.log(err);
         res.status(500).send(err);
@@ -346,6 +366,8 @@ async function run() {
 
     // get all review
     app.get("/all-reviews", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
       try {
         const result = await menuCollection
           .aggregate([
@@ -387,8 +409,11 @@ async function run() {
               },
             },
           ])
+          .skip(page * size)
+          .limit(size)
           .toArray();
-        res.send(result);
+        const count = await menuCollection.countDocuments();
+        res.send({ result, count });
       } catch (err) {
         console.log(err);
         res.status(500).send(err);
