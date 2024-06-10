@@ -169,6 +169,26 @@ async function run() {
       res.send(result);
     });
 
+    // get upcoming meal data from db by sort
+    app.get("/upcoming-meals-sort", async (req, res) => {
+      const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+      const size = parseInt(req.query.size);
+      const page = parseInt(req.query.page) - 1;
+
+      try {
+        const result = await upcomingMealCollection
+          .find()
+          .skip(page * size)
+          .limit(size)
+          .sort({ likes_count: sortOrder })
+          .toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // save user data in db
     app.put("/user", async (req, res) => {
       const user = req.body;
@@ -511,7 +531,7 @@ async function run() {
 
           // recalculate total likes count by liked or not
           meal.likes_count = meal.likes.filter((like) => like.liked).length;
-          console.log(meal.likes_count);
+
           const result = await menuCollection.updateOne(query, {
             $set: { likes: meal.likes, likes_count: meal.likes_count },
           });
@@ -529,9 +549,6 @@ async function run() {
 
           // recalculate total likes count by liked or not
           meal.likes_count = meal.likes.filter((like) => like.liked).length;
-
-          console.log(meal.likes_count);
-
           const result = await menuCollection.updateOne(query, {
             $set: { likes: meal.likes, likes_count: meal.likes_count },
           });
@@ -543,6 +560,7 @@ async function run() {
         res.status(500).send(err);
       }
     });
+
     // save like data in upcoming db
     app.post("/upcoming-like", async (req, res) => {
       const { meal_id, user_id, name, email, photo, liked, created_time } =
