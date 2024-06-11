@@ -144,6 +144,33 @@ async function run() {
       res.send(result);
     });
 
+    // get menu data from db
+    app.get("/all-menu", async (req, res) => {
+      const { search, category, minPrice, maxPrice } = req.query;
+      const parsedMinPrice = parseFloat(minPrice) || 0;
+      const parsedMaxPrice = parseFloat(maxPrice) || Infinity;
+      const query = {};
+      try {
+        if (search) {
+          query.meal_title = { $regex: search, $options: "i" };
+        }
+        if (category) {
+          query.meal_category = category;
+        }
+        if (minPrice || maxPrice) {
+          query.price = { $gte: parsedMinPrice, $lte: parsedMaxPrice };
+        }
+
+        const meals = await menuCollection.find(query).toArray();
+        const count = await menuCollection.countDocuments(query);
+
+        res.send({ count, meals });
+      } catch (err) {
+        console.log(err);
+        res.send(err);
+      }
+    });
+
     // get single menu data from db
     app.get("/menu/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
