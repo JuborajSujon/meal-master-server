@@ -308,6 +308,20 @@ async function run() {
       res.send(result);
     });
 
+    // update user data from db
+    app.patch("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const userInfo = req.body;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {
+          ...userInfo,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // get all user data from db
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const size = parseInt(req.query.size);
@@ -882,6 +896,14 @@ async function run() {
       const email = req.query.email;
       const query = { email: email };
       const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // delete payment data useing id
+    app.delete("/payments/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await paymentCollection.deleteOne(query);
       res.send(result);
     });
 
