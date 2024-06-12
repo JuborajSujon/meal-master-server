@@ -12,8 +12,8 @@ const corsOptions = {
   origin: [
     "http://localhost:5173",
     "http://localhost:5174",
-    "meal-master-chef.web.app",
-    "meal-master-chef.firebaseapp.com",
+    "https://meal-master-chef.web.app",
+    "https://mealmasterchef.netlify.app",
   ],
   credentials: true,
   optionSuccessStatus: 200,

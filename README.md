@@ -2,9 +2,9 @@
 
 ### Live Site URL:
 
-Firebase Hosting : []()
+Firebase Hosting : [https://meal-master-chef.web.app/](https://meal-master-chef.web.app/)
 
-Netlify Hosting : []()
+Netlify Hosting : [https://mealmasterchef.netlify.app/](https://mealmasterchef.netlify.app/)
 
 ## Features and Characteristics:
 
