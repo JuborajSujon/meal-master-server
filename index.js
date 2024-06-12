@@ -274,40 +274,45 @@ async function run() {
     });
 
     // update upcoming meal data and send menu data
-    app.patch("/upcoming-meal/:id", async (req, res) => {
-      try {
-        const id = req.params.id;
-        const updatedItem = req.body;
-        const filter = { _id: new ObjectId(id) };
-        const options = { upsert: true };
-        const updateDoc = {
-          $set: {
-            ...updatedItem,
-          },
-        };
-        const result = await upcomingMealCollection.updateOne(
-          filter,
-          updateDoc,
-          options
-        );
+    app.patch(
+      "/upcoming-meal/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        try {
+          const id = req.params.id;
+          const updatedItem = req.body;
+          const filter = { _id: new ObjectId(id) };
+          const options = { upsert: true };
+          const updateDoc = {
+            $set: {
+              ...updatedItem,
+            },
+          };
+          const result = await upcomingMealCollection.updateOne(
+            filter,
+            updateDoc,
+            options
+          );
 
-        // send to menuCollection for inserted menu data
+          // send to menuCollection for inserted menu data
 
-        const updateMeal = await upcomingMealCollection.findOne({
-          _id: new ObjectId(id),
-        });
+          const updateMeal = await upcomingMealCollection.findOne({
+            _id: new ObjectId(id),
+          });
 
-        const insertData = await menuCollection.insertOne(updateMeal);
+          const insertData = await menuCollection.insertOne(updateMeal);
 
-        // Delete upcoming meal
-        await upcomingMealCollection.deleteOne(filter);
+          // Delete upcoming meal
+          await upcomingMealCollection.deleteOne(filter);
 
-        res.send(insertData);
-      } catch (err) {
-        console.log(err);
-        res.status(500).send(err);
+          res.send(insertData);
+        } catch (err) {
+          console.log(err);
+          res.status(500).send(err);
+        }
       }
-    });
+    );
 
     // save user data in db
     app.put("/user", async (req, res) => {
@@ -751,6 +756,33 @@ async function run() {
           const result = await upcomingMealCollection.updateOne(query, {
             $set: { likes: meal.likes, likes_count: meal.likes_count },
           });
+          const totalLikes = meal.likes_count;
+          if (totalLikes >= 10) {
+            const updatedItem = {
+              post_status: "Published",
+            };
+            const options = { upsert: true };
+            const updateDoc = {
+              $set: {
+                ...updatedItem,
+              },
+            };
+            const updateUpcomingMeal = await upcomingMealCollection.updateOne(
+              query,
+              updateDoc,
+              options
+            );
+
+            // send to menuCollection for inserted menu data
+
+            const updateMeal = await upcomingMealCollection.findOne(query);
+
+            const insertData = await menuCollection.insertOne(updateMeal);
+
+            // Delete upcoming meal
+            await upcomingMealCollection.deleteOne(query);
+          }
+
           res.send(result);
         } else {
           // if like not exist
