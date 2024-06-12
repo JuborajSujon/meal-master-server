@@ -114,6 +114,7 @@ async function run() {
           })
           .send({ success: true });
       } catch (err) {
+        console.log(err);
         res.status(500).send(err);
       }
     });
@@ -187,7 +188,6 @@ async function run() {
       async (req, res) => {
         const email = req.params.email;
         const query = { "admin.email": email };
-        console.log(query);
         const result = await menuCollection.find(query).toArray();
         res.send(result);
       }
@@ -197,8 +197,6 @@ async function run() {
     app.put("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const updatedItem = req.body;
-      console.log(updatedItem);
-      console.log(id);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
@@ -228,7 +226,6 @@ async function run() {
 
       const sortReviews = req.query.sortReviews === "asc" ? 1 : -1;
 
-      console.log(sortLike, sortReviews);
       try {
         const result = await menuCollection
           .find()
