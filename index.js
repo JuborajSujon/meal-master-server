@@ -179,6 +179,20 @@ async function run() {
       res.send(result);
     });
 
+    // get admin added menu data from db by email
+    app.get(
+      "/menu/admin/:email",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const email = req.params.email;
+        const query = { "admin.email": email };
+        console.log(query);
+        const result = await menuCollection.find(query).toArray();
+        res.send(result);
+      }
+    );
+
     // Update menu data in db
     app.put("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
