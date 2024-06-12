@@ -273,6 +273,42 @@ async function run() {
       }
     });
 
+    // update upcoming meal data and send menu data
+    app.patch("/upcoming-meal/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const updatedItem = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateDoc = {
+          $set: {
+            ...updatedItem,
+          },
+        };
+        const result = await upcomingMealCollection.updateOne(
+          filter,
+          updateDoc,
+          options
+        );
+
+        // send to menuCollection for inserted menu data
+
+        const updateMeal = await upcomingMealCollection.findOne({
+          _id: new ObjectId(id),
+        });
+
+        const insertData = await menuCollection.insertOne(updateMeal);
+
+        // Delete upcoming meal
+        await upcomingMealCollection.deleteOne(filter);
+
+        res.send(insertData);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+      }
+    });
+
     // save user data in db
     app.put("/user", async (req, res) => {
       const user = req.body;
@@ -712,7 +748,6 @@ async function run() {
 
           // recalculate total likes count by liked or not
           meal.likes_count = meal.likes.filter((like) => like.liked).length;
-          console.log(meal.likes_count);
           const result = await upcomingMealCollection.updateOne(query, {
             $set: { likes: meal.likes, likes_count: meal.likes_count },
           });
