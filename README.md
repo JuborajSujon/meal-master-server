@@ -6,6 +6,7 @@ Firebase Hosting : [https://meal-master-chef.web.app/](https://meal-master-chef.
 
 Netlify Hosting : [https://mealmasterchef.netlify.app/](https://mealmasterchef.netlify.app/)
 
+Meal Master client side repository : [https://github.com/JuborajSujon/meal-master-client.git](https://github.com/JuborajSujon/meal-master-client.git)
 ## Features and Characteristics:
 
 - Create, Read, Update, and Delete (CRUD) operations
@@ -26,14 +27,14 @@ Netlify Hosting : [https://mealmasterchef.netlify.app/](https://mealmasterchef.n
 1. Clone the repository from GitHub:
 
 ```
-git clone https://github.com/programming-hero-web-course1/b9a12-server-side-JuborajSujon
+git clone https://github.com/JuborajSujon/meal-master-server.git
 
 ```
 
 2. Navigate to the project directory:
 
 ```
-cd fixnexus-server
+cd meal-master-server
 ```
 
 3. Install dependencies using npm or yarn:
